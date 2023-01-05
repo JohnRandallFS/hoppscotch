@@ -222,6 +222,7 @@ const oauthRedirect = () => {
           tokenResponse = sendPostRequest(getLocalConfig("tokenEndpoint"), {
             grant_type: "authorization_code",
             code: q.code,
+            client_id: getLocalConfig("client_id"),
             redirect_uri: redirectUri,
             code_verifier: getLocalConfig("pkce_codeVerifier"),
           })
