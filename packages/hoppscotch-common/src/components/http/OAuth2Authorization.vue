@@ -28,7 +28,6 @@
         @click="handleAccessTokenRequest()"
       />
     </div>
-
   </div>
 </template>
 
