@@ -147,6 +147,11 @@
         {{ t("state.nothing_found") }} "{{ filterText }}"
       </span>
     </div>
+    <CollectionsAllOpen
+      :show="showModalAllOpen"
+      :loading-state="modalLoadingState"
+      @hide-modal="displayModalAllOpen(false)"
+    />
     <CollectionsAdd
       :show="showModalAdd"
       :loading-state="modalLoadingState"
@@ -292,6 +297,7 @@ export default defineComponent({
       IconArchive: markRaw(IconArchive),
       IconHelpCircle: markRaw(IconHelpCircle),
       IconPlus: markRaw(IconPlus),
+      showModalAllOpen: true,
       showModalAdd: false,
       showModalEdit: false,
       showModalImportExport: false,
@@ -579,6 +585,9 @@ export default defineComponent({
           }
         })
       }
+    },
+    displayModalAllOpen(shouldDisplay) {
+      this.showModalAllOpen = shouldDisplay
     },
     displayModalAdd(shouldDisplay) {
       this.showModalAdd = shouldDisplay

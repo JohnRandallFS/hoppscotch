@@ -32,6 +32,8 @@ declare module '@vue/runtime-core' {
     CollectionsAdd: typeof import('./components/collections/Add.vue')['default']
     CollectionsAddFolder: typeof import('./components/collections/AddFolder.vue')['default']
     CollectionsAddRequest: typeof import('./components/collections/AddRequest.vue')['default']
+    CollectionsAllOpen: typeof import('./components/collections/all/Open.vue')['default']
+    CollectionsAllSave: typeof import('./components/collections/all/Save.vue')['default']
     CollectionsChooseType: typeof import('./components/collections/ChooseType.vue')['default']
     CollectionsEdit: typeof import('./components/collections/Edit.vue')['default']
     CollectionsEditFolder: typeof import('./components/collections/EditFolder.vue')['default']

@@ -129,7 +129,9 @@
     "select": "Select a Collection",
     "select_location": "Select location",
     "select_team": "Select a team",
-    "team_collections": "Team Collections"
+    "team_collections": "Team Collections",
+    "open": "Open Collections and Environments",
+    "save": "Save Collections and Enviroments"
   },
   "confirm": {
     "exit_team": "Are you sure you want to leave this team?",
@@ -197,7 +199,9 @@
     "team_environments": "Team Environments",
     "title": "Environments",
     "updated": "Environment updated",
-    "variable_list": "Variable List"
+    "variable_list": "Variable List",
+    "include_envs": "Include Environments",
+    "include_globals": "Include Global Variables"
   },
   "error": {
     "browser_support_sse": "This browser doesn't seems to have Server Sent Events support.",
@@ -256,7 +260,9 @@
   "header": {
     "install_pwa": "Install app",
     "login": "Login",
-    "save_workspace": "Save My Workspace"
+    "save_workspace": "Save My Workspace",
+    "save_to_disk": "Save Collections to Disk",
+    "save_envs": "Save Environments to Disk"
   },
   "helpers": {
     "authorization": "The authorization header will be automatically generated when you send the request.",

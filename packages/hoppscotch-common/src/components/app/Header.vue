@@ -42,6 +42,17 @@
           class="rounded hover:bg-primaryDark focus-visible:bg-primaryDark"
           @click="invokeAction('modals.support.toggle')"
         />
+        <CollectionsAllSave
+          :show="showModalAllSave"
+          @hide-modal="displayModalAllSave(false)"
+        />
+        <ButtonPrimary
+          :icon="IconDownload"
+          :label="t('collection.save')"
+          filled
+          class="flex-1 rounded min-w-20"
+          @click="displayModalAllSave(true)"
+        />
         <ButtonSecondary
           v-if="currentUser === null"
           :icon="IconUploadCloud"
@@ -50,7 +61,7 @@
           class="hidden md:flex"
           @click="invokeAction('modals.login.toggle')"
         />
-        <ButtonPrimary
+        <ButtonSecondary
           v-if="currentUser === null"
           :label="t('header.login')"
           @click="invokeAction('modals.login.toggle')"
@@ -161,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue"
+import { computed, defineComponent, reactive, ref } from "vue"
 import IconUser from "~icons/lucide/user"
 import IconSettings from "~icons/lucide/settings"
 import IconDownload from "~icons/lucide/download"
@@ -169,6 +180,7 @@ import IconSearch from "~icons/lucide/search"
 import IconLifeBuoy from "~icons/lucide/life-buoy"
 import IconUploadCloud from "~icons/lucide/upload-cloud"
 import IconUserPlus from "~icons/lucide/user-plus"
+import IconChevronDown from "~icons/lucide/chevron-down"
 import { breakpointsTailwind, useBreakpoints, useNetwork } from "@vueuse/core"
 import { pwaDefferedPrompt, installPWA } from "@modules/pwa"
 import { probableUser$ } from "@helpers/fb/auth"
@@ -176,6 +188,8 @@ import { useI18n } from "@composables/i18n"
 import { useReadonlyStream } from "@composables/stream"
 import { invokeAction } from "@helpers/actions"
 import { platform } from "~/index"
+
+const showModalAllSave = ref(false)
 
 const t = useI18n()
 
@@ -201,4 +215,9 @@ const tippyActions = ref<any | null>(null)
 const profile = ref<any | null>(null)
 const settings = ref<any | null>(null)
 const logout = ref<any | null>(null)
+
+    const displayModalAllSave = (shouldDisplay: boolean) => {
+      showModalAllSave.value = shouldDisplay
+    }
+
 </script>
