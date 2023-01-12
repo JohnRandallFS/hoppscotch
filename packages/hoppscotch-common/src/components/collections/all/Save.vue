@@ -9,8 +9,8 @@
         <ButtonPrimary
           :label="t('collection.save')"
           filled
-          class="flex-1 rounded-r-none min-w-20"
-          @click="SaveToDisk()"
+          class="flex-1 min-w-20"
+          @click="saveToDisk()"
           />
       </div>
       <span class="my-2 text-center">
@@ -58,8 +58,8 @@
       return {
         toast: useToast(),
         t: useI18n(),
-        includeEnvs: ref(true),
-        includeGlobals: ref(true),
+        includeEnvs: ref(false),
+        includeGlobals: ref(false),
       }
     },
     data() {
@@ -79,13 +79,13 @@
         this.name = null
         this.$emit("hide-modal")
       },
-      SaveToDisk() {
-        SaveToDisk(this.includeEnvs, this.includeGlobals)
+      saveToDisk() {
+        saveToDisk(this.includeEnvs, this.includeGlobals)
       }
     },
   })
 
-  const SaveToDisk = async (includeEnvs: boolean, includeGlobals: boolean) => {
+  const saveToDisk = async (includeEnvs: boolean, includeGlobals: boolean) => {
 
     const collectionJson = ref("")
     const environmentJson = ref("")
@@ -101,7 +101,7 @@
       : ""
 
     const globals = includeGlobals
-      ? ", globals: " + cloneDeep(getGlobalVariables())
+      ? ", globals: " + JSON.stringify(cloneDeep(getGlobalVariables()))
       : ""
  
     const file = new Blob(["{" + collections + environments + globals + "}"], { type: "application/json" })
@@ -109,11 +109,9 @@
     const url = URL.createObjectURL(file)
     a.href = url
 
-    // TODO: get uri from meta
     a.download = `Hoppscotch_Collections.json`
     document.body.appendChild(a)
     a.click()
-    //this.toast.success(this.t("state.download_started").toString())
     setTimeout(() => {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
