@@ -92,16 +92,16 @@
 
     const collectionsStream = useReadonlyStream(restCollections$, [])
     collectionJson.value = JSON.stringify(collectionsStream.value, null, 2)
-    const collections = "collections: " + collectionJson.value
+    const collections = "\"collections\": " + collectionJson.value
 
     const environmentsStream = useReadonlyStream(environments$, [])
     environmentJson.value = JSON.stringify(environmentsStream.value, null, 2)
     const environments = includeEnvs
-      ? ", environments: " + environmentJson.value
+      ? ", \"environments\": " + environmentJson.value
       : ""
 
     const globals = includeGlobals
-      ? ", globals: " + JSON.stringify(cloneDeep(getGlobalVariables()))
+      ? ", \"globals\": " + JSON.stringify(cloneDeep(getGlobalVariables()))
       : ""
  
     const file = new Blob(["{" + collections + environments + globals + "}"], { type: "application/json" })

@@ -9,9 +9,10 @@
       <div class="flex mt-2 sm:mt-0">
         <ButtonPrimary :icon="IconDownload"
                        :label="t('collection.save')"
+                       :disabled="enableImportButton"
                        filled
                        class="flex-1 rounded min-w-20"
-                       @click="openFromDisk()" />
+                       @click="openFromDisk" />
       </div>
       <span class="my-2 text-center">
         <div class="flex mt-2 sm:mt-0">
@@ -48,20 +49,20 @@
                  type="file"
                  class="p-4 cursor-pointer transition file:transition file:cursor-pointer text-secondary hover:text-secondaryDark file:mr-2 file:py-2 file:px-4 file:rounded file:border-0 file:text-secondary hover:file:text-secondaryDark file:bg-primaryLight hover:file:bg-primaryDark"
                  :accept="acceptedFileTypes"
-                 :change="getFile()" />
+                 :change="onFileChange" />
         </p>
         </div>
     </template>
   </SmartModal>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { useToast } from "@composables/toast"
 import { useI18n } from "@composables/i18n"
-  import {
-    defineComponent,
-    ref,
-  } from "vue"
+import {
+  computed,
+  ref,
+} from "vue"
 import { translateToNewRESTCollection } from "@hoppscotch/data"
 import {
   restCollectionStore,
@@ -72,154 +73,84 @@ import {
   environmentsStore,
   appendEnvironments,
   deleteEnvironment,
-  clearGlobalEnvVariables,
+  addGlobalEnvVariable,
   setGlobalEnvVariables,
-  } from "~/newstore/environments"
+} from "~/newstore/environments"
+import { size } from "lodash-es"
 
-  export default defineComponent({
-    props: {
-      show: Boolean,
-      loadingState: Boolean,
-      },
-    emits: ["submit", "hide-modal"],
-    setup() {
-      return {
-        toast: useToast(),
-        t: useI18n(),
-        includeEnvs: ref(false),
-        includeGlobals: ref(false),
-        overwrite: ref(false), //Change after testing
-        acceptedFileTypes: "application/json",
-        }
-    },
-    data() {
-      return {
-        name: null,
-        file: {} as Blob,
-        content: "" as string,
-      }
-    },
-    watch: {
-      show(isShowing: boolean) {
-        if (!isShowing) {
-          this.name = null
-        }
-      },
-    },
-    methods: {
-      hideModal() {
-        this.name = null
-        this.$emit("hide-modal")
-      },
-      openFromDisk() {
+  const props = defineProps<{
+    show: boolean
+    loadingState: boolean,
+  }>()
 
-        const reader = new FileReader()
+  const emit = defineEmits<{
+    (e: "hide-modal"): void
+  }>()
 
-        reader.onload = (res) => {
-          this.content = res.target!.result as string
+  const toast = useToast()
+  const t = useI18n()
+  const includeEnvs = ref(false)
+  const includeGlobals = ref(false)
+  const overwrite = ref(true) //Change after testing
+  const inputChooseFileToOpenAll = ref<HTMLInputElement | any>()
+  const acceptedFileTypes = "application/json"
+  var collectionsFile: Object
 
-          if (!this.content) {
-            this.toast.show(this.t("action.choose_file").toString())
-            return
-          }
+  const fileImported = () => {
+    toast.success(t("state.file_imported").toString())
+    hideModal()
+  }
 
-          const collectionsFile = JSON.parse(this.content)
+  const failedImport = () => {
+    toast.error(t("import.failed").toString())
+  }
 
-          if (collectionsFile.collections) {
-            const collections = collectionsFile.collections
+  const hideModal = () => {
+    emit("hide-modal")
+  }
 
-            if (this.overwrite) {
-              const length = restCollectionStore.value.state.length
+  const hasFile = ref(false)
 
-              for (let i = 0; i < length; i++) {
-                removeRESTCollection(i)
-              }
-            }
-
-            var hoppCollections = []
-
-            for (const collection in collections) {
-              const hoppCollection = translateToNewRESTCollection(collection)
-              hoppCollections.push(hoppCollection)
-            }
-
-            appendRESTCollections(hoppCollections)
-          }
-
-          if (this.includeEnvs && collectionsFile.environments) {
-            const environments = collectionsFile.environments
-
-            if (this.overwrite) {
-              const length = environmentsStore.value.environments.length
-
-              for (let i = 0; i < length; i++) {
-                deleteEnvironment(i)
-              }
-            }
-
-            appendEnvironments(environments)
-          }
-
-          if (this.includeGlobals && collectionsFile.globals) {
-            const globals = collectionsFile.globals
-
-            if (this.overwrite) {
-              clearGlobalEnvVariables()
-            }
-
-            setGlobalEnvVariables(globals)
-          }
-
-        }
-
-        reader.readAsText(this.file)
-
-      },
-      getFile(openElement: any) {
-        //if (!openElement.target) return
-
-        //if (
-        //  !openElement.target.file[0].value ||
-        //  openElement.target.file[0].value.length === 0
-        //) {
-        //  this.toast.show(this.t("action.choose_file").toString())
-        //  return
-        //}
-        //this.file = openElement!.target.files[0]
-      }
-    },
-  })
-
-
-  /*const inputChooseFileToOpenAll = ref<HTMLInputElement | any>()
-
-  const openFromDisk = (includeEnvs: boolean, includeGlobals: boolean, overwrite: boolean) => {
-    if (!inputChooseFileToOpenAll.value) return
-
-    if (
-      !inputChooseFileToOpenAll.value.files ||
-      inputChooseFileToOpenAll.value.files.length === 0
-    ) {
-      this.toast.show(this.t("action.choose_file").toString())
+  const onFileChange = () => {
+    if (!inputChooseFileToOpenAll.value[0]) {
+      hasFile.value = false
       return
     }
 
-    const reader = new FileReader()
+    if (
+      !inputChooseFileToOpenAll.value[0].files ||
+      inputChooseFileToOpenAll.value[0].files.length === 0
+    ) {
+      inputChooseFileToOpenAll.value[0].value = ""
+      hasFile.value = false
+      toast.show(t("action.choose_file").toString())
+      return
+    }
 
+    //Something here is failing, file format not recognised,
+    //Directly importing file does work, so the issue is with handling here
+    const reader = new FileReader()
     reader.onload = ({ target }) => {
       const content = target!.result as string | null
-
       if (!content) {
-        this.toast.show(this.t("action.choose_file").toString())
+        hasFile.value = false
+        toast.show(t("action.choose_file").toString())
         return
       }
 
-      const collectionsFile = JSON.parse(content)
+      collectionsFile = JSON.parse(content)
+      hasFile.value = !!content?.length
+    }
+    reader.readAsText(inputChooseFileToOpenAll.value[0].files[0])
+  }
 
-      if (collectionsFile.collections) {
+  const openFromDisk = () => {
+    try {
+      toast.show(String(size(collectionsFile))) //Test
+      if (collectionsFile.collections) { 
         const collections = collectionsFile.collections
 
-        if (overwrite) {
+        if (overwrite.value) {
           const length = restCollectionStore.value.state.length
 
           for (let i = 0; i < length; i++) {
@@ -229,18 +160,18 @@ import {
 
         var hoppCollections = []
 
-        for (const collection in collections) {
-          const hoppCollection = translateToNewRESTCollection(collection)
+        for (let i = 0; i < size(collections); i++) {
+          const hoppCollection = translateToNewRESTCollection(collections[i])
           hoppCollections.push(hoppCollection)
         }
-        
+
         appendRESTCollections(hoppCollections)
       }
 
-      if (includeEnvs && collectionsFile.environments) {
+      if (includeEnvs.value && collectionsFile.environments) {
         const environments = collectionsFile.environments
 
-        if (overwrite) {
+        if (overwrite.value) {
           const length = environmentsStore.value.environments.length
 
           for (let i = 0; i < length; i++) {
@@ -251,20 +182,26 @@ import {
         appendEnvironments(environments)
       }
 
-      if (includeGlobals && collectionsFile.globals) {
+      if (includeGlobals.value && collectionsFile.globals) {
         const globals = collectionsFile.globals
 
-        if (overwrite) {
-          clearGlobalEnvVariables()
+        if (overwrite.value) {
+          setGlobalEnvVariables(globals)
+        } else {
+          for (let i = 0; i < size(globals); i++) {
+            addGlobalEnvVariable(globals[i])
+          }
         }
-
-        setGlobalEnvVariables(globals)
+        
       }
 
+      fileImported()
+    } catch (e) {
+      failedImport()
     }
+  }
 
-    reader.readAsText(inputChooseFileToOpenAll.value[0].files[0])
-    //inputChooseFileToOpenAll.value.value = ""
-    
-  }*/
+  const enableImportButton = computed(
+    () => !(hasFile)
+  )
 </script>
