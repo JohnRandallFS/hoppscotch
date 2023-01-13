@@ -152,7 +152,7 @@ const tokenRequest = async ({
   scope,
 }) => {
   // Check oauth configuration
-  if (oidcDiscoveryUrl !== "") {
+  if (oidcDiscoveryUrl) {
     // eslint-disable-next-line camelcase
     const { authorization_endpoint, token_endpoint } =
       await getTokenConfiguration(oidcDiscoveryUrl)
@@ -218,14 +218,24 @@ const oauthRedirect = () => {
     } else {
       try {
         // Exchange the authorization code for an access token
-        tokenResponse = sendPostRequest(getLocalConfig("tokenEndpoint"), {
-          grant_type: "authorization_code",
-          code: q.code,
-          client_id: getLocalConfig("client_id"),
-          client_secret: getLocalConfig("client_secret"),
-          redirect_uri: redirectUri,
-          code_verifier: getLocalConfig("pkce_codeVerifier"),
-        })
+        if (!getLocalConfig("client_secret")) {
+          tokenResponse = sendPostRequest(getLocalConfig("tokenEndpoint"), {
+            grant_type: "authorization_code",
+            code: q.code,
+            client_id: getLocalConfig("client_id"),
+            redirect_uri: redirectUri,
+            code_verifier: getLocalConfig("pkce_codeVerifier"),
+          })
+        } else {
+          tokenResponse = sendPostRequest(getLocalConfig("tokenEndpoint"), {
+            grant_type: "authorization_code",
+            code: q.code,
+            client_id: getLocalConfig("client_id"),
+            client_secret: getLocalConfig("client_secret"),
+            redirect_uri: redirectUri,
+            code_verifier: getLocalConfig("pkce_codeVerifier"),
+          })
+        }
       } catch (e) {
         console.error(e)
         return Promise.reject(tokenResponse)

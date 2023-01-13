@@ -96,7 +96,7 @@ export default defineComponent({
           accessTokenUrl: parseTemplateString(accessTokenURL.value, envVars),
           clientId: parseTemplateString(clientID.value, envVars),
           clientSecret: parseTemplateString(clientSecret.value, envVars),
-          scope: parseTemplateString(scope.value, envVars),
+          scope: ((parseTemplateString(scope.value, envVars)) === undefined) ? "" : parseTemplateString(scope.value, envVars),
         }
         await tokenRequest(tokenReqParams)
       } catch (e) {
